@@ -1,45 +1,23 @@
-# Hillside 2012 — magnetotelluric processing and archiving
+# Hillside 2012 — Magnetotelluric Processing Code
 
-> **Private review repository — incomplete source recovery. Not a public software release.**
+Python and Gadi PBS workflows for the Adelaide University Hillside 2012 magnetotelluric survey, prepared for AuScope/NCI archiving.
 
-This repository documents the historical processing, quality control, metadata preparation and NCI/AuScope archive preparation for Adelaide University's **Hillside 2012 magnetotelluric survey**.
+## Processing stages
 
-The purpose is to preserve the scripts **as actually used**, document later publication-format corrections separately, and make the complete processing provenance auditable. Dataset publication is separate from software publication.
+- **Level 0:** recording inventory, run selection, ASCII concatenation, metadata preparation and station MTH5 creation.
+- **Level 1:** calibration and documented polarity corrections using **200 mV/nT** magnetic sensitivity, retaining the original **1,000 Hz** sampling rate without resampling or geographic rotation.
+- **Level 2:** conversion of existing 2025 EDI transfer functions to MTH5, without recalculating the transfer functions. Original EDI processing: Relly Margiono.
+- **Archive organisation:** per-station raw ZIP packaging, provenance updates and final NCI directory structure.
+- **October corrections:** per-run ASCII split into individual header-free EX/EY/BX/BY/BZ channels; MTH5 publication filenames changed to .h5.
 
-## Processing history
+HSSL03 run 0003 contains only EX, BX, BY and BZ; EY is absent.
 
-- **Packed raw:** original recordings grouped by station into ZIP archives.
-- **Level 0 ASCII:** original processing selected runs and generated combined five-column, headered ASCII files. On **24 October 2026**, the staged files were split *after MTH5 creation* into one header-free file per run and available component (`.EX`, `.EY`, `.BX`, `.BY`, `.BZ`).
-- **Level 0 MTH5:** station files generated from the original processing workflow; publication filenames changed from `STATION_L0.mth5` to `STATION.h5`. This is a rename, not regeneration.
-- **Level 1 MTH5:** the Hillside product was **not resampled**; do not label it "Resampled." Final production scripts are still being recovered for the repository.
-- **Level 2:** MTH5 files were generated using **previously processed EDI transfer functions**, not by reprocessing raw time series. Original EDI processing attribution must be preserved.
+## Intended dataset layout
 
-The confirmed ASCII job logs report **73 stations, 210 runs, 1,049 separate channel files**, including **HSSL03/run_0003**, which has EX, BX, BY and BZ, but **no EY**. This must not be filled with invented data.
-
-## Final reported NCI staging layout
-
-```text
-Hillside_2012/
-├── Packed_Raw_Time_Series_Archive/
-├── level_0/
-│   ├── Concatenated_Time_Series_ASCII_per_run/
-│   └── Concatenated_Time_Series_MTH5_per_run/
-├── level_1/
-│   └── Concatenated_Rotated_Time_Series_MTH5/
-└── level_2/
-    ├── MTH5/Adelaide_University/
-    └── EDI/Adelaide_University/
-        └── Metadata/
-```
-
-Level 0 per-day ASCII was not produced for this survey. The directory layout above is the operator-reported final staging layout; it is **not** independent verification of NCI catalogue publication.
+Packed_Raw_Time_Series_Archive; level_0/Concatenated_Time_Series_ASCII_per_run; level_0/Concatenated_Time_Series_MTH5_per_run; level_1/Concatenated_Rotated_Time_Series_MTH5; level_2/MTH5/Adelaide_University; level_2/EDI/Adelaide_University/Metadata.
 
 ## Repository status
 
-This is a **review-stage scaffold**. The complete Level 0 source, final Level 1 and Level 2 workflows, archive-organisation scripts, provenance updates, tests and actual PBS execution artefacts still need to be reconciled and included. See [missing source packages](docs/MISSING_FILES.md) and [code provenance](docs/CODE_PROVENANCE.md).
+This repository is **private**. The processing scripts have been organised separately for upload. The source code is not yet present in this GitHub repository.
 
-Raw recordings, time-series datasets, EDI files, MTH5/HDF5 datasets, individual station metadata and sensitive material are **not** intended to be committed to GitHub.
-
-## Publication and attribution
-
-No public licence or software DOI is asserted. Permission and contributor credit for original code must be reviewed with relevant Adelaide University, NCI and AuScope collaborators before any public release. See [publication checklist](docs/PUBLISHING.md).
+Geophysical datasets, EDI files, HDF5/MTH5 outputs and station metadata workbooks are excluded. Software ownership, contributor credit and licensing should be agreed before public distribution. See docs/CODE_PROVENANCE.md and docs/PUBLISHING.md.
