@@ -1,13 +1,11 @@
-# Code provenance and executed changes
+# Processing-code provenance
 
-The original Level 0 pipeline exported combined, headered ASCII run files. These were used to create station MTH5 files before the October 2026 publication-format correction.
+The project code covers historical Level 0 operations, corrected Level 1 calibration, the Level 2 EDI-to-MTH5 importer, metadata/provenance updates, and archive organisation.
 
-Verified later changes from user-supplied PBS logs:
+Originally, Level 0 exported combined five-column ASCII runs with headers. In October 2026, the publication staging files were split into individual header-free component files. This change occurred after the original MTH5 creation step, and it did not regenerate those files.
 
-- **24 October 2026**, job `182176483.gadi-pbs`: ASCII split, 72 stations, 207 runs, 1,035 component files; final structure PASS; exit 0.
-- **24 October 2026**, job `182182112.gadi-pbs`: HSSL03 ASCII split, 3 runs, 14 component files; final structure PASS; exit 0. HSSL03 run 0003 lacks EY.
-- Level 0 MTH5: 73 original `.mth5` files passed `h5dump -H` using HDF5 1.12.2. Filenames subsequently changed to `.h5`; data contents not regenerated.
-- Level 1: no resampling, and final directory naming omits `Resampled`.
-- Level 2: generated MTH5 from pre-existing EDI transfer functions; original EDI processing and later MTH5 packaging require separate attribution.
+The Hillside Level 1 product retains 1,000 Hz. Its corrected source uses **200 mV/nT** magnetic sensitivity. The earlier 400 mV/nT source is superseded.
 
-Archive ZIP packaging and other final processing scripts still await execution-provenance reconciliation. Historical code will be kept distinct from October corrections. Never replace an as-executed script with a proposed future version while describing it as original.
+Level 2 MTH5 products were made from EDI transfer functions processed in 2025 by Relly Margiono. Those numerical transfer functions were not recalculated.
+
+Original MTH5 files were renamed to station-specific .h5 files during archive preparation. EDI, time-series and MTH5/HDF5 datasets remain outside this code repository.
