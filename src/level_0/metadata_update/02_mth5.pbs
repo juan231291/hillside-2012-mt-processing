@@ -1,0 +1,22 @@
+#!/bin/bash
+#PBS -N hs_mth5_fix1
+#PBS -P tq84
+#PBS -q normalsr
+#PBS -l ncpus=73
+#PBS -l mem=292GB
+#PBS -l walltime=08:00:00
+#PBS -l jobfs=1GB
+#PBS -l storage=gdata/tq84+gdata/up99
+#PBS -l wd
+#PBS -j oe
+set -eo pipefail
+cd "${PBS_O_WORKDIR:?Submit from the correction package directory}"
+sha256sum --quiet -c SHA256SUMS.txt
+module use /g/data/up99/modulefiles
+module load NCI-geophys/26.03
+set -u
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+export PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+mpirun -np "${PBS_NCPUS:?}" python3 workflow.py run --config configs/hillside.json \
+  --step 10 --revision v4_20260918_fix1 --workers "$PBS_NCPUS" --mpi
+python3 correction.py verify

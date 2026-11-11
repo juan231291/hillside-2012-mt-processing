@@ -1,0 +1,23 @@
+{
+  "schema": "mtl0.survey_configuration/1",
+  "survey_id": "ExampleSurvey",
+  "input_profile": "earthdata_channels_v1",
+  "raw_root": "/path/to/unzipped_stations",
+  "metadata_workbook": "/path/to/original_metadata.xlsx",
+  "batch_dir": "/path/to/new_level0_batch",
+  "expected_metadata_sha256": null,
+  "expected_station_count": null,
+  "stations": "ALL",
+  "station_aliases": {},
+  "filename_utc_offset": "+00:00",
+  "log_utc_offset": "+00:00",
+  "workers": 4,
+  "selection_rules": "example_selection_rules.json",
+  "ownership_rules": "example_ownership_rules.json",
+  "limits": {
+    "preview_bytes": 4096,
+    "miniseed_bytes": 67108864,
+    "miniseed_samples": 16000000,
+    "overlap_samples": 2000000
+  }
+}

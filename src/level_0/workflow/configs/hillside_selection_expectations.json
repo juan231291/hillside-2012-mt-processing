@@ -1,0 +1,13 @@
+{
+  "schema": "mtl0.selection_expectations/1",
+  "counts": {
+    "include": 19506,
+    "exclude_startup": 340,
+    "exclude_timing_conflict": 37,
+    "exclude_reviewed": 12
+  },
+  "run_count": 210,
+  "station_count": 73,
+  "recording_groups": 19895,
+  "run_plans_sha256": "69d0f63272ee72b79e67d16b5af93c5fc31065fbfac1eebf6a762761a157bfd4"
+}

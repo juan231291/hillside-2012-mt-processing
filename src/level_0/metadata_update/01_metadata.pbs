@@ -1,0 +1,20 @@
+#!/bin/bash
+#PBS -N hs_meta_fix1
+#PBS -P tq84
+#PBS -q normalsr
+#PBS -l ncpus=1
+#PBS -l mem=8GB
+#PBS -l walltime=02:00:00
+#PBS -l jobfs=1GB
+#PBS -l storage=gdata/tq84+gdata/up99
+#PBS -l wd
+#PBS -j oe
+set -eo pipefail
+cd "${PBS_O_WORKDIR:?Submit from the correction package directory}"
+sha256sum --quiet -c SHA256SUMS.txt
+module use /g/data/up99/modulefiles
+module load NCI-geophys/26.03
+set -u
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+export PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+python3 correction.py apply

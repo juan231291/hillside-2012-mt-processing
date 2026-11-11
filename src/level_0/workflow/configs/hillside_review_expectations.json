@@ -1,0 +1,12 @@
+{
+  "decision_counts": {
+    "retain_for_qc": 19895,
+    "exclude_duplicate": 275,
+    "exclude_reviewed": 166
+  },
+  "excluded_unknown_owner_groups": 159,
+  "stations_with_retained_groups": 73,
+  "source_groups": 20336,
+  "unresolved_groups": 0,
+  "scope": "Expected after applying all 424 reviewed overrides to the original Step 04 assessment. Not a sample-QC result."
+}

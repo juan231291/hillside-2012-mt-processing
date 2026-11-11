@@ -1,0 +1,41 @@
+{
+  "schema": "hillside.level1.settings/1",
+  "release": "v5_20260921_200mv",
+  "batch": "/g/data/tq84/jh7824/hillside_workflow/Hillside_all_level0_v3",
+  "source_revision": "v4_20260918_fix1",
+  "output_sample_rate_hz": 1000,
+  "source_sample_rate_hz": 1000,
+  "output_reference_frame": "geomagnetic",
+  "apply_declination": false,
+  "uncorrected_stations": [
+    "HS021",
+    "HS039",
+    "HS040",
+    "HS041",
+    "HS055",
+    "HS055b"
+  ],
+  "uncorrected_comment": "Direction correction not applied because one or more channel azimuths are unknown.",
+  "microvolts_per_count": 1.0,
+  "electric_interface_gain": 10.0,
+  "magnetic_sensitivity_mv_per_nt": 200.0,
+  "response_file": "l120new.rsp",
+  "response_sha256": "5566046d239a844c623c2ec53295da87c1dcfe60f6c762e5ca6087c8565d6e8c",
+  "magnetic_fft": {
+    "remove_mean": true,
+    "reflection_seconds": 10000.0,
+    "low_taper_start_hz": 0.0001,
+    "low_taper_end_hz": 0.0002
+  },
+  "run_selection": {
+    "short_run_max_seconds": 3600,
+    "exclude_short_only_if_station_has_run_above_threshold": true,
+    "duration_basis": "source_sample_count_divided_by_source_sample_rate"
+  },
+  "expected_stations": 73,
+  "expected_source_runs": 210,
+  "expected_source_channel_instances": 1049,
+  "sampling_policy": "Preserve native sampling; do not downsample this Level 1 release.",
+  "magnetic_sensitivity_basis": "Juan corrected the Hillside sensitivity to 200 mV/nT on 21 September 2026; supersedes the earlier 400 mV/nT adoption.",
+  "supersedes_release": "v4_20260921_1000hz"
+}

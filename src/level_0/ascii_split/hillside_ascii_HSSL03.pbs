@@ -1,0 +1,40 @@
+#!/bin/bash
+#PBS -N hillside_ascii_HSSL03
+#PBS -P tq84
+#PBS -q normal
+#PBS -l walltime=02:00:00
+#PBS -l ncpus=1
+#PBS -l mem=4GB
+#PBS -l storage=gdata/tq84+gdata/my80
+#PBS -l wd
+#PBS -j oe
+#PBS -o /g/data/tq84/jh7824/hillside_ascii_HSSL03.log
+
+set -euo pipefail
+module load python3/3.11.0
+cd /g/data/tq84/jh7824
+
+# Same lock as the 72-station batch; refuse to overlap jobs.
+exec 9>/g/data/tq84/jh7824/.hillside_ascii_split.lock
+if ! flock -n 9; then
+    echo 'ERROR: Another Hillside ASCII conversion job is running. Submit HSSL03 after it finishes.' >&2
+    exit 1
+fi
+
+SCRIPT=/g/data/tq84/jh7824/hillside_ascii_split_except_HSSL03_v3.py
+if [[ ! -f "$SCRIPT" ]]; then
+    echo "ERROR: Missing script $SCRIPT" >&2
+    exit 1
+fi
+
+python3 --version
+echo "HSSL03 preflight: $(date)"
+python3 "$SCRIPT" --station HSSL03 --check
+
+echo "HSSL03 conversion: $(date)"
+python3 "$SCRIPT" --station HSSL03 --workers 1
+
+echo "HSSL03 audit: $(date)"
+python3 "$SCRIPT" --station HSSL03 --audit
+
+echo "HSSL03 complete: $(date)"

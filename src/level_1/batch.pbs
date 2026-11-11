@@ -1,0 +1,21 @@
+#!/bin/bash
+#PBS -N hs_l1_v5_all
+#PBS -P tq84
+#PBS -q normalsr
+#PBS -l ncpus=16
+#PBS -l mem=64GB
+#PBS -l walltime=24:00:00
+#PBS -l jobfs=2GB
+#PBS -l storage=gdata/tq84+gdata/up99
+#PBS -l wd
+#PBS -j oe
+set -eo pipefail
+cd "${PBS_O_WORKDIR:?Submit from the package directory}"
+sha256sum --quiet -c SHA256SUMS.txt
+module use /g/data/up99/modulefiles
+module load NCI-geophys/26.03
+set -u
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+export PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+export MPLBACKEND=Agg
+python3 level1.py all --workers 2 --config "${HILLSIDE_CONFIG:-config.json}"

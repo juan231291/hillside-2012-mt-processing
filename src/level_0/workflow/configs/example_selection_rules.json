@@ -1,0 +1,14 @@
+{
+  "schema": "mtl0.selection_rules/1",
+  "reviewer": "",
+  "default": {
+    "output_native_rate_hz": "any",
+    "accept_logged_ascii_rate_estimates": false,
+    "startup_policy": {
+      "enabled": false,
+      "rates_hz": []
+    }
+  },
+  "stations": {},
+  "exclude_stations": {}
+}

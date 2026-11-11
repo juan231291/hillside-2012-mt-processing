@@ -1,0 +1,35 @@
+#!/bin/bash
+#PBS -N hillside_ascii_except_HSSL03_v3
+#PBS -P tq84
+#PBS -q normal
+#PBS -l walltime=24:00:00
+#PBS -l ncpus=4
+#PBS -l mem=16GB
+#PBS -l storage=gdata/tq84+gdata/my80
+#PBS -l wd
+#PBS -j oe
+#PBS -o /g/data/tq84/jh7824/hillside_ascii_except_HSSL03_v3.log
+
+set -euo pipefail
+module load python3/3.11.0
+WORKDIR=/g/data/tq84/jh7824
+cd "$WORKDIR"
+python3 --version
+python3 -c 'import sys; assert sys.version_info >= (3, 10), "Python >= 3.10 required"'
+exec 9>"$WORKDIR/.hillside_ascii_split.lock"
+if ! flock -n 9; then
+  echo 'ERROR: Another Hillside ASCII conversion job holds the lock.' >&2
+  exit 1
+fi
+SCRIPT="$WORKDIR/hillside_ascii_split_except_HSSL03_v3.py"
+if [[ ! -f "$SCRIPT" ]]; then
+  echo "ERROR: Missing Python script: $SCRIPT" >&2
+  exit 1
+fi
+echo "Preflight: $(date)"
+python3 "$SCRIPT" --check --exclude-station HSSL03
+
+echo "Conversion (HSSL03 excluded): $(date)"
+python3 "$SCRIPT" --workers "$PBS_NCPUS" --exclude-station HSSL03
+
+echo "Completed: $(date)"

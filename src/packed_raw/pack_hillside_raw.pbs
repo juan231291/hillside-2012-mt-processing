@@ -1,0 +1,181 @@
+#!/bin/bash
+#PBS -N Hillside_raw_zip
+#PBS -P tq84
+#PBS -q copyq
+#PBS -l ncpus=1
+#PBS -l mem=8GB
+#PBS -l walltime=10:00:00
+#PBS -l storage=gdata/tq84+gdata/my80
+#PBS -l wd
+
+set -Eeuo pipefail
+
+# PBS file, station manifest and PBS logs are kept under tq84.
+# Only the final station ZIP archives are written to my80.
+WORK="/g/data/tq84/jh7824"
+BASE="/g/data/my80/admin/staging/AuScope_Broadband/States_and_Territories/South_Australia/Hillside_2012"
+SRC="$BASE/unzip_raw_time_series"
+DST="$BASE/Packed_Raw_Time_Series_Archive"
+BACKUP="$WORK/Hillside_survey/Hillside_survey/unzip_raw_time_series"
+MANIFEST="$WORK/Hillside_2012_raw_station_manifest.txt"
+
+command -v zip >/dev/null || { echo "ERROR: zip not found" >&2; exit 1; }
+command -v python3 >/dev/null || { echo "ERROR: python3 not found" >&2; exit 1; }
+
+# Do not remove any original staging folder unless the backup exists.
+if [[ ! -d "$BACKUP" ]]; then
+    echo "ERROR: Expected tq84 backup not found: $BACKUP" >&2
+    echo "Set BACKUP to the actual backup directory and resubmit." >&2
+    exit 1
+fi
+
+# Save the original 73 station names to tq84 to support interrupted-job recovery.
+if [[ ! -f "$MANIFEST" ]]; then
+    [[ -d "$SRC" ]] || { echo "ERROR: Source directory missing: $SRC" >&2; exit 1; }
+    if find "$SRC" -mindepth 1 -maxdepth 1 ! -type d -print -quit | grep -q .; then
+        echo "ERROR: Unexpected files at the top level of $SRC" >&2
+        exit 1
+    fi
+    find "$SRC" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
+        | LC_ALL=C sort > "${MANIFEST}.tmp"
+    if [[ $(wc -l < "${MANIFEST}.tmp") -ne 73 ]]; then
+        echo "ERROR: Expected 73 stations in the source directory." >&2
+        rm -f "${MANIFEST}.tmp"
+        exit 1
+    fi
+    mv -- "${MANIFEST}.tmp" "$MANIFEST"
+fi
+
+mapfile -t STATIONS < "$MANIFEST"
+[[ ${#STATIONS[@]} -eq 73 ]] || { echo "ERROR: Manifest must contain 73 stations" >&2; exit 1; }
+
+# Confirm all 73 station folders also exist in the backup before deleting any.
+for STATION in "${STATIONS[@]}"; do
+    if [[ ! "$STATION" =~ ^(HS[[:alnum:]]+|HSSL[[:digit:]]+)$ ]]; then
+        echo "ERROR: Unexpected station ID in manifest: $STATION" >&2
+        exit 1
+    fi
+    [[ -d "$BACKUP/$STATION" ]] || {
+        echo "ERROR: Missing backup for $STATION: $BACKUP/$STATION" >&2
+        exit 1
+    }
+done
+
+mkdir -p -- "$DST"
+
+echo "Starting $(date)"
+echo "Archive destination: $DST"
+echo "Job file and logs: $WORK"
+echo "Backup location: $BACKUP"
+
+for STATION in "${STATIONS[@]}"; do
+    FOLDER="$SRC/$STATION"
+    ARCHIVE="$DST/$STATION.zip"
+    TEMP="$DST/$STATION.incomplete.zip"
+
+    echo "--- $STATION ($(date)) ---"
+
+    if [[ -d "$FOLDER" ]]; then
+        if [[ ! -f "$ARCHIVE" ]]; then
+            # A previously interrupted job may have left an incomplete ZIP.
+            rm -f -- "$TEMP"
+            ( cd "$SRC" && zip -q -r -1 -y "$TEMP" "$STATION" )
+            CANDIDATE="$TEMP"
+        else
+            CANDIDATE="$ARCHIVE"
+        fi
+
+        # Compare every archived file byte-for-byte by SHA-256 with its source.
+        # Check that all paths are represented and preserve symbolic links.
+        python3 - "$FOLDER" "$CANDIDATE" <<'PY'
+import hashlib
+import os
+from pathlib import Path
+import stat
+import sys
+import zipfile
+
+folder = Path(sys.argv[1])
+archive = Path(sys.argv[2])
+station = folder.name
+
+def sha256_stream(stream):
+    digest = hashlib.sha256()
+    while True:
+        chunk = stream.read(8 * 1024 * 1024)
+        if not chunk:
+            break
+        digest.update(chunk)
+    return digest.digest()
+
+with zipfile.ZipFile(archive, "r") as zf:
+    entries = {entry.filename: entry for entry in zf.infolist()}
+    expected = {station + "/"}
+    file_count = 0
+    for path in folder.rglob("*"):
+        member = station + "/" + path.relative_to(folder).as_posix()
+        if path.is_symlink():
+            expected.add(member)
+            info = entries.get(member)
+            if info is None or not stat.S_ISLNK(info.external_attr >> 16):
+                raise RuntimeError(f"Missing symlink or wrong member type: {member}")
+            encoded_target = os.fsencode(os.readlink(path))
+            if zf.read(member) != encoded_target:
+                raise RuntimeError(f"Symlink target differs: {member}")
+        elif path.is_dir():
+            expected.add(member + "/")
+        elif path.is_file():
+            expected.add(member)
+            if member not in entries:
+                raise RuntimeError(f"Missing file: {member}")
+            with path.open("rb") as original, zf.open(member, "r") as packed:
+                if sha256_stream(original) != sha256_stream(packed):
+                    raise RuntimeError(f"SHA-256 mismatch: {member}")
+            file_count += 1
+        else:
+            raise RuntimeError(f"Unsupported special file: {path}")
+    if set(entries) != expected:
+        missing = sorted(expected - set(entries))
+        extra = sorted(set(entries) - expected)
+        raise RuntimeError(f"ZIP entry mismatch; missing={missing[:10]}, extra={extra[:10]}")
+    if not file_count:
+        raise RuntimeError(f"Station archive has no regular files: {station}")
+    print(f"SHA-256/PATHS PASS: {station} ({file_count} regular files)", flush=True)
+PY
+
+        if [[ "$CANDIDATE" == "$TEMP" ]]; then
+            mv -- "$TEMP" "$ARCHIVE"
+        fi
+
+        # Source deletion is permitted because the verified ZIP and tq84 backup exist.
+        rm -rf -- "$FOLDER"
+        echo "PACKED, VERIFIED, REMOVED STAGING FOLDER: $STATION"
+    else
+        # Safe resume if a previous run already completed this station.
+        [[ -f "$ARCHIVE" ]] || {
+            echo "ERROR: Both source and ZIP missing for $STATION" >&2
+            exit 1
+        }
+        python3 - "$ARCHIVE" <<'PY'
+import sys
+import zipfile
+with zipfile.ZipFile(sys.argv[1], "r") as zf:
+    bad = zf.testzip()
+    if bad is not None:
+        raise RuntimeError(f"Corrupted member: {bad}")
+print("Existing archive CRC PASS", flush=True)
+PY
+        echo "ALREADY PACKED: $STATION"
+    fi
+done
+
+TOTAL=$(find "$DST" -mindepth 1 -maxdepth 1 -type f -name '*.zip' | wc -l)
+[[ "$TOTAL" -eq 73 ]] || { echo "ERROR: Expected 73 ZIPs, found $TOTAL" >&2; exit 1; }
+
+# Only the empty source container is removed; Level_0/Level_1/Level_2 remain untouched.
+if [[ -d "$SRC" ]]; then
+    rmdir -- "$SRC"
+fi
+
+echo "SUCCESS: 73 station ZIPs created and verified ($(date))"
+echo "Final archive: $DST"
