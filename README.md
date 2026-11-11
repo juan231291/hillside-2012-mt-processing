@@ -1,23 +1,23 @@
-# Hillside 2012 — Magnetotelluric Processing Code
+# Hillside 2012 MT processing
 
-Python and Gadi PBS workflows for the Adelaide University Hillside 2012 magnetotelluric survey, prepared for AuScope/NCI archiving.
+Python and PBS source code used to prepare the Adelaide University Hillside 2012 magnetotelluric survey for the AuScope / NCI data collection.
 
-## Processing stages
+## Code layout
 
-- **Level 0:** recording inventory, run selection, ASCII concatenation, metadata preparation and station MTH5 creation.
-- **Level 1:** calibration and documented polarity corrections using **200 mV/nT** magnetic sensitivity, retaining the original **1,000 Hz** sampling rate without resampling or geographic rotation.
-- **Level 2:** conversion of existing 2025 EDI transfer functions to MTH5, without recalculating the transfer functions. Original EDI processing: Relly Margiono.
-- **Archive organisation:** per-station raw ZIP packaging, provenance updates and final NCI directory structure.
-- **October corrections:** per-run ASCII split into individual header-free EX/EY/BX/BY/BZ channels; MTH5 publication filenames changed to .h5.
+- `src/level_0/workflow/`: inventory, duplicate screening, time information, run selection, concatenated time series, metadata and MTH5 creation.
+- `src/level_0/metadata_update/`: subsequent Level 0 metadata updates.
+- `src/level_0/ascii_split/`: conversion of five-column per-run ASCII into separate header-free EX, EY, BX, BY and BZ files.
+- `src/level_1/`: 1,000 Hz processing, electric and magnetic calibration, and channel polarity handling (corrected 200 mV/nT magnetic sensitivity).
+- `src/level_2/`: conversion of pre-existing EDI transfer functions to MTH5.
+- `src/metadata_provenance/`: MTH5 metadata and provenance updates.
+- `src/packed_raw/`: per-station raw ZIP archive packaging.
 
-HSSL03 run 0003 contains only EX, BX, BY and BZ; EY is absent.
+## Processing notes
 
-## Intended dataset layout
+The ASCII split was performed after the initial Level 0 MTH5 creation; it does not regenerate the MTH5 products. HSSL03 run 0003 contains EX, BX, BY and BZ only; no EY observations were created. Level 1 retains 1,000 Hz with no resampling or geographic rotation.
 
-Packed_Raw_Time_Series_Archive; level_0/Concatenated_Time_Series_ASCII_per_run; level_0/Concatenated_Time_Series_MTH5_per_run; level_1/Concatenated_Rotated_Time_Series_MTH5; level_2/MTH5/Adelaide_University; level_2/EDI/Adelaide_University/Metadata.
+The original Level 2 EDI transfer functions were processed in 2025 by Relly Margiono at Adelaide University. The 2026 Level 2 scripts import those existing responses into MTH5 without recalculating them.
 
-## Repository status
+Gadi-specific paths and settings in the original scripts refer to the working environment used for the Hillside survey. Acquisition recordings, EDI files, MTH5/HDF5 data and processed outputs are not included here.
 
-This repository is **private**. The processing scripts have been organised separately for upload. The source code is not yet present in this GitHub repository.
-
-Geophysical datasets, EDI files, HDF5/MTH5 outputs and station metadata workbooks are excluded. Software ownership, contributor credit and licensing should be agreed before public distribution. See docs/CODE_PROVENANCE.md and docs/PUBLISHING.md.
+This code is currently retained in a private repository pending agreement on source-code attribution, ownership and licensing.
