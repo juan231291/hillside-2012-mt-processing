@@ -1,13 +1,11 @@
-# Private-review to public-release checklist
+# Publication notes
 
-This repository is private and is **not yet a software publication**.
+This is a private code repository. Before releasing publicly:
 
-1. Recover the remaining final code archives and identify which scripts actually produced each product.
-2. Preserve historical scripts unchanged and place late publication-format corrections in separately labelled files.
-3. Review permissions and attribution with Adelaide University, NCI, AuScope, Graham Heinson, Nigel Rees, Ben Kay and any other original code contributors, as applicable.
-4. Review all files for raw data, restricted metadata, private paths and credentials. Do not commit datasets.
-5. Obtain approval for a software licence; finalise `CITATION.cff`, contributors, README, dependencies and tests.
-6. Make the repository public only when approved; tag a GitHub release and, if desired, archive that release through Zenodo to obtain a software DOI.
-7. Coordinate software-DOI references in the NCI/AuScope dataset catalogue.
+1. Include source scripts and later archive-format corrections with clear version names.
+2. Keep original EDI files, raw time series, generated HDF5/MTH5 data and processing workbooks outside GitHub.
+3. Confirm authorship, ownership and licensing with the appropriate Adelaide University, NCI and AuScope collaborators.
+4. Prepare contributor credits, dependency documentation and a software citation.
+5. Approve a GitHub release and, if useful, archive it through Zenodo for a software DOI.
 
-No software DOI or public release has been created.
+No public software release or DOI has been issued.
