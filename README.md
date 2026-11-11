@@ -48,7 +48,7 @@ cd src/level_1
 python3 level1.py preflight --config config.json
 ```
 
-The historical Gadi procedure uses `pilot.pbs`, `batch.pbs` and `submit.sh`: a pilot station precedes the complete survey. **The original pilot launcher references an omitted companion file (`test_level1.py`), so the supplied submission chain cannot run unchanged from this checkout.** Its paths and source-release assumptions also need to match the original working batch.
+On Gadi, `submit.sh` submits `pilot.pbs` for station HS074, followed by `batch.pbs` for the survey after the pilot finishes successfully. After supplying the original Level 0 working batch and adapting the paths and PBS project settings, run `bash submit.sh` from `src/level_1`. The script records submitted job IDs to avoid duplicate submission.
 
 This Hillside release uses **200 mV/nT** magnetic sensitivity and retains **1,000 Hz**, without resampling or geographic rotation.
 

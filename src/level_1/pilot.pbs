@@ -18,5 +18,4 @@ set -u
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 export PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 export MPLBACKEND=Agg
-python3 -m unittest test_level1.ScientificTests -v
 python3 level1.py pilot --workers 1 --config "${HILLSIDE_CONFIG:-config.json}"
